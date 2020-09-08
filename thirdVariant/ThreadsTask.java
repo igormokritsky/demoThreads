@@ -6,7 +6,7 @@ import java.util.concurrent.*;
 public class ThreadsTask {
 
     public static void main(String[] args) {
-        // buffer class used by both threads
+        // buffer class used by threads
         SharedTQ buffer = new SharedTQ();
         // Starting three threads
         ExecutorService executor = Executors.newFixedThreadPool(3);
