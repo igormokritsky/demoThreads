@@ -4,34 +4,37 @@ import java.util.concurrent.BlockingQueue;
 
 public class Incrementer implements Runnable {
 
-    BlockingQueue<SharedState> incomingQueue;
-    BlockingQueue<SharedState> outcomingQueue;
 
-    public Incrementer(BlockingQueue<SharedState> incomingQueue,
-                       BlockingQueue<SharedState> outcomingQueue) {
+    private final BlockingQueue<Integer> incomingQueue;
+    private final BlockingQueue<Integer> outcomingQueue;
+
+    static volatile int i = 0;
+    static boolean stop = false;
+
+    public Incrementer(BlockingQueue<Integer> incomingQueue,
+                       BlockingQueue<Integer> outcomingQueue) {
         this.incomingQueue = incomingQueue;
         this.outcomingQueue = outcomingQueue;
     }
+
 
     @Override
     public void run() {
         while (true) {
             try {
-                SharedState state = incomingQueue.take();
-                System.out.println(Thread.currentThread().getName() + " took " + state);
-                if (state.stop) {
-                    outcomingQueue.put(state);
+                System.out.println(Thread.currentThread().getName() + " took " + i);
+                if (stop) {
+                    outcomingQueue.put(incomingQueue.take());
                     break;
-                } else if (state.i != 100) {
-                    state.i++;
-
+                } else if (i != 100) {
+                    i++;
                 } else {
-                    state.stop = true;
+                    stop = true;
                 }
-                System.out.println(Thread.currentThread().getName() + " sent " + state);
-                outcomingQueue.put(state);
+                System.out.println(Thread.currentThread().getName() + " sent " + i);
+                outcomingQueue.put(incomingQueue.take());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
 
